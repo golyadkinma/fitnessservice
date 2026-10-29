@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>FitTrack — фитнес-трекер</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">⌁</span>
+      <div>
+        <h1>FitTrack</h1>
+        <p id="greeting">Твой фитнес-компаньон</p>
+      </div>
+    </div>
+    <div class="level-chip" id="levelChip" title="Уровень и очки">
+      <span id="levelNum">Ур. 1</span>
+      <span class="level-bar"><i id="levelFill" style="width:0%"></i></span>
+    </div>
+  </header>
+
+  <main id="screens">
+    <!-- ГЛАВНАЯ -->
+    <section class="screen" id="screen-home">
+      <div class="hero card">
+        <div class="hero-steps">
+          <div class="ring" id="stepsRing"><b id="stepsToday">0</b><small>шагов сегодня</small></div>
+          <div class="hero-facts">
+            <div><b id="stepsKm">0,0</b><small>км</small></div>
+            <div><b id="stepsKcal">0</b><small>ккал</small></div>
+            <div><b id="stepsStreak">0</b><small>серия</small></div>
+          </div>
+        </div>
+        <p class="hint" id="stepsHint">Шагомер-заглушка: данные вносятся вручную, интеграция с сенсорами телефона появится позже.</p>
+        <form class="row" id="stepsForm">
+          <input type="date" id="stepsDate" required>
+          <input type="number" id="stepsInput" min="0" max="200000" placeholder="Шаги за день" required>
+          <button class="btn" type="submit">Записать</button>
+        </form>
+      </div>
+      <div class="grid-2">
+        <div class="card mini" id="miniBmi"><span class="mini-icon">⚖️</span><b>Калькулятор ИМТ</b><small>оценить массу тела</small></div>
+        <div class="card mini" id="miniCatalog"><span class="mini-icon">🛍️</span><b>Каталог</b><small>спортивное питание</small></div>
+        <div class="card mini" id="miniChallenges"><span class="mini-icon">🏆</span><b>Челленджи</b><small>цели вместе с командой</small></div>
+        <div class="card mini" id="miniCoach"><span class="mini-icon">🤖</span><b>ИИ-тренер</b><small>персональные советы</small></div>
+      </div>
+      <div class="card">
+        <h2>Сводка недели</h2>
+        <div class="chart" id="weekChart"></div>
+      </div>
+    </section>
+
+    <!-- КАТАЛОГ -->
+    <section class="screen" id="screen-catalog" hidden>
+      <div class="row">
+        <input type="search" id="catalogSearch" placeholder="Поиск по каталогу…">
+        <select id="catalogCategory"><option value="">Все категории</option></select>
+      </div>
+      <div class="product-list" id="productList"></div>
+    </section>
+
+    <!-- ИМТ -->
+    <section class="screen" id="screen-bmi" hidden>
+      <div class="card">
+        <h2>Калькулятор индекса массы тела</h2>
+        <form id="bmiForm" class="form-col">
+          <label>Масса, кг <input type="number" id="bmiWeight" step="0.1" min="20" max="400" required></label>
+          <label>Рост, м <input type="number" id="bmiHeight" step="0.01" min="0.5" max="2.6" required></label>
+          <button class="btn" type="submit">Рассчитать</button>
+        </form>
+        <div id="bmiResult" class="bmi-result" hidden>
+          <div class="bmi-value"><b id="bmiValue">0</b><small>ИМТ</small></div>
+          <p id="bmiCategory"></p>
+          <p class="hint" id="bmiAdvice"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ЧЕЛЛЕНДЖИ -->
+    <section class="screen" id="screen-challenges" hidden>
+      <div id="challengeList"></div>
+    </section>
+
+    <!-- НАПОМИНАНИЯ -->
+    <section class="screen" id="screen-reminders" hidden>
+      <div class="card">
+        <h2>Новое напоминание</h2>
+        <form id="reminderForm" class="form-col">
+          <label>Название <input type="text" id="remTitle" maxlength="60" placeholder="Тренировка в зале" required></label>
+          <label>Время <input type="time" id="remTime" required></label>
+          <div class="weekday-picker" id="weekdayPicker"></div>
+          <button class="btn" type="submit">Добавить</button>
+        </form>
+      </div>
+      <div id="reminderList" class="reminder-list"></div>
+    </section>
+
+    <!-- ЧАТ -->
+    <section class="screen" id="screen-chat" hidden>
+      <div class="chat-box card" id="chatBox"></div>
+      <form class="row" id="chatForm">
+        <input type="text" id="chatInput" maxlength="500" placeholder="Сообщение в общий чат…" autocomplete="off">
+        <button class="btn" type="submit">➤</button>
+      </form>
+    </section>
+
+    <!-- ИИ-ТРЕНЕР -->
+    <section class="screen" id="screen-coach" hidden>
+      <div class="chat-box card" id="coachBox">
+        <div class="msg bot">Привет! Я бот-тренер. Спроси про ИМТ, шаги, питание, тренировки или питьевой режим.</div>
+      </div>
+      <form class="row" id="coachForm">
+        <input type="text" id="coachInput" maxlength="1000" placeholder="Спроси тренера…" autocomplete="off">
+        <button class="btn" type="submit">➤</button>
+      </form>
+    </section>
+
+    <!-- ПРОФИЛЬ -->
+    <section class="screen" id="screen-profile" hidden>
+      <div class="card">
+        <h2>Профиль</h2>
+        <form id="profileForm" class="form-col">
+          <label>Имя <input type="text" id="profName" maxlength="40"></label>
+          <label>Масса, кг <input type="number" id="profWeight" step="0.1"></label>
+          <label>Рост, м <input type="number" id="profHeight" step="0.01"></label>
+          <label>Норма шагов в день <input type="number" id="profGoal" min="1000" max="50000" step="100"></label>
+          <button class="btn" type="submit">Сохранить</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Геймификация</h2>
+        <div class="progress-row"><span>Очки</span><b id="profPoints">0</b></div>
+        <div class="progress-row"><span>Уровень</span><b id="profLevel">1</b></div>
+        <div id="achievementList" class="achievements"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar" id="tabbar">
+    <button data-screen="home" class="active">🏠<small>Главное</small></button>
+    <button data-screen="catalog">🛍️<small>Каталог</small></button>
+    <button data-screen="bmi">⚖️<small>ИМТ</small></button>
+    <button data-screen="challenges">🏆<small>Челленджи</small></button>
+    <button data-screen="reminders">⏰<small>Будильник</small></button>
+    <button data-screen="chat">💬<small>Чат</small></button>
+    <button data-screen="coach">🤖<small>Тренер</small></button>
+    <button data-screen="profile">👤<small>Профиль</small></button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
