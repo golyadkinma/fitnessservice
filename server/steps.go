@@ -63,27 +63,28 @@ func StepsOn(entries []StepDay, date string) int {
 }
 
 // CurrentStreak возвращает длину серии дней подряд, в которые выполнена норма.
-// Отсчёт ведётся от последней даты в списке назад.
+// Отсчёт ведётся от указанной даты назад. Текущий день ещё не завершён,
+// поэтому невыполненная норма сегодня не обрывает серию.
 func CurrentStreak(entries []StepDay, today string, goal int) int {
-	if len(entries) == 0 {
-		return 0
-	}
-	latest := ""
-	for _, e := range entries {
-		if e.Date > latest {
-			latest = e.Date
-		}
-	}
-	cursor, err := time.Parse(dateLayout, latest)
+	cursor, err := time.Parse(dateLayout, today)
 	if err != nil {
 		return 0
 	}
 	streak := 0
+	first := true
 	for {
 		key := cursor.Format(dateLayout)
-		if StepsOn(entries, key) < goal {
+		steps := StepsOn(entries, key)
+		if steps < goal {
+			if first && steps < goal {
+				// Сегодняшний день не завершён — не обрывает серию.
+				first = false
+				cursor = cursor.AddDate(0, 0, -1)
+				continue
+			}
 			break
 		}
+		first = false
 		streak++
 		cursor = cursor.AddDate(0, 0, -1)
 	}
